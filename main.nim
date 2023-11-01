@@ -266,9 +266,14 @@ proc PBASIC_GEN(instruct:string): void =
         SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
         """
 #-------Body Code Block Generation--------------------------------------------------------------------------------------
+    var bodt_bl:string
 
+#-------Body Code Block Generation--------------------------------------------------------------------------------------
+    var sub_bl:string
 #-------Entire PBASIC Program Code Generation---------------------------------------------------------------------------
-
+    var code:string = head_bl & foot1_bl & foot2_bl
+#-------PBASIC File Generation------------------------------------------------------------------------------------------
+    writeFile(fileName,code)
 #-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
 proc main() =
