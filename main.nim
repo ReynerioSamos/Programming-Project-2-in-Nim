@@ -68,7 +68,25 @@ var
     linecount: int = 0
 
     subr_GO, subr_RV, subr_LF, subr_RT, subr_AC, subr_CW : bool = false
+
+    A_asn : (bool, string)
+    B_asn : (bool, string)
+    C_asn : (bool, string)
+    D_asn : (bool, string)
     # errorCode = "f"
+
+proc match_keytomove(key : string, subroutine : string):void =
+    case key:
+    of "A", "a":
+        A_asn = (true,subroutine)
+    of "B", "b":
+        B_asn = (true,subroutine)
+    of "C", "c":
+        C_asn = (true,subroutine)
+    of "D", "d":
+        D_asn = (true,subroutine)
+    else:
+        return
 
 # pause() : void procedure to force a pause until enter is pressed
 proc pause():void =
@@ -108,8 +126,40 @@ proc parseMove(inputString: string): bool =
     let key = detailsMove[0].strip()
 
     case move:
-    of "GO", "RV", "LF", "RT", "AC", "CW":
+    of "GO":
         linecount += 1
+        subr_GO = true
+        match_keytomove(key,"Forward")
+        derivationString = derivationString.replace("<MOVE>", move)
+        derivationHistory.add($linecount & format & derivationString)
+    of "RV":
+        linecount += 1
+        subr_RV = true
+        match_keytomove(key,"Backward")
+        derivationString = derivationString.replace("<MOVE>", move)
+        derivationHistory.add($linecount & format & derivationString)
+    of "LF":
+        linecount += 1
+        subr_LF = true
+        match_keytomove(key,"TurnLeft")
+        derivationString = derivationString.replace("<MOVE>", move)
+        derivationHistory.add($linecount & format & derivationString)
+    of "RT":
+        linecount += 1
+        subr_RT = true
+        match_keytomove(key,"TurnRight")
+        derivationString = derivationString.replace("<MOVE>", move)
+        derivationHistory.add($linecount & format & derivationString)
+    of "AC": 
+        linecount += 1
+        subr_AC = true
+        match_keytomove(key,"SpinLeft")
+        derivationString = derivationString.replace("<MOVE>", move)
+        derivationHistory.add($linecount & format & derivationString)
+    of "CW":
+        linecount += 1
+        subr_CW = true
+        match_keytomove(key,"SpinRight")
         derivationString = derivationString.replace("<MOVE>", move)
         derivationHistory.add($linecount & format & derivationString)
     else:
@@ -269,8 +319,19 @@ SpinLeft:  HIGH 13  : LOW 12 : HIGH 14 : LOW 15 : RETURN
 SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
 """
 #-------Body Code Block Generation--------------------------------------------------------------------------------------
-    var body_bl:string
-
+    var body_bl:string = ""
+    if A_asn[0]:
+        body_bl = body_bl & """
+             IF KEY = "A" OR KEY = "a" THEN GOSUB """  & A_asn[1] & "\n"
+    if B_asn[0]:
+        body_bl = body_bl & """
+             IF KEY = "B" OR KEY = "b" THEN GOSUB """  & B_asn[1] & "\n"
+    if C_asn[0]:
+        body_bl = body_bl & """
+             IF KEY = "C" OR KEY = "c" THEN GOSUB """  & C_asn[1] & "\n"
+    if D_asn[0]:
+        body_bl = body_bl & """
+             IF KEY = "D" OR KEY = "d" THEN GOSUB """  & D_asn[1] & "\n"
 
 #-------Subroutine Code Block Generation---------------------------------------------------------------------------------
     var sub_bl:string
@@ -315,12 +376,16 @@ proc main() =
     while true:
         # reinitializing globals for next derivation
         linecount = 0
+        A_asn = (false, "")
+        B_asn = (false, "")
+        C_asn = (false, "")
+        D_asn = (false, "")
         subr_AC = false 
         subr_CW = false 
         subr_GO = false
         subr_LF = false 
         subr_RT = false
-        subr_RV = true
+        subr_RV = false
         echo "\nPlease enter a string. Enter 'ABORT' to exit:"
         inputString = readLine(stdin)
 
