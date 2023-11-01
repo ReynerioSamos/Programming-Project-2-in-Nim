@@ -230,50 +230,55 @@ proc PBASIC_GEN(instruct:string): void =
         fileName:string = "IZEBOT.BSP"
 #-------Provided Code Blocks---------------------------------------------------------------------------------------------
         head_bl:string = """
-        '{$STAMP BS2p}
-        '{$PBASIC 2.5}
-        KEY        VAR     Byte
-        Main:      DO
-                   SERIN 3,2063,250,Timeout,[KEY]
-        """
+'{$STAMP BS2p}
+'{$PBASIC 2.5}
+KEY        VAR     Byte
+Main:      DO
+             SERIN 3,2063,250,Timeout,[KEY]
+"""
         foot1_bl:string = """
-                   LOOP
-        Timeout:   GOSUB Motor_OFF
-                   GOTO Main
-        '+++++ Movement Procedure ++++++++++++++++++++++++++++++
-        """
+           LOOP
+Timeout:   GOSUB Motor_OFF
+           GOTO Main
+'+++++ Movement Procedure ++++++++++++++++++++++++++++++
+"""
         foot2_bl:string = """
-        Motor_OFF: LOW   13 : LOW 12 : LOW  15 : LOW 14 : RETURN
-        '+++++++++++++++++++++++++++++++++++++++++++++++++++++++
-        """
+Motor_OFF: LOW   13 : LOW 12 : LOW  15 : LOW 14 : RETURN
+'+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+"""
 #-------Subroutine blocks by Defined movement---------------------------------------------------------------------------
         forward:string = """
-        Forward:   HIGH  13 : LOW 12 : HIGH 15 : LOW 14 : RETURN
-        """
+Forward:   HIGH  13 : LOW 12 : HIGH 15 : LOW 14 : RETURN
+"""
         backward:string = """
-        Backward:  HIGH 12  : LOW 13 : HIGH 14 : LOW 15 : RETURN
-        """
+Backward:  HIGH 12  : LOW 13 : HIGH 14 : LOW 15 : RETURN
+"""
         turnleft:string = """
-        TurnLeft:  HIGH 13  : LOW 12 : LOW 15  : LOW 14 : RETURN
-        """
+TurnLeft:  HIGH 13  : LOW 12 : LOW 15  : LOW 14 : RETURN
+"""
         turnright:string = """
-        TurnRight: LOW 13   : LOW 12 : HIGH 15 : LOW 14 : RETURN
-        """
+TurnRight: LOW 13   : LOW 12 : HIGH 15 : LOW 14 : RETURN
+"""
         spinleft:string = """
-        SpinLeft:  HIGH 13  : LOW 12 : HIGH 14 : LOW 15 : RETURN
-        """
+SpinLeft:  HIGH 13  : LOW 12 : HIGH 14 : LOW 15 : RETURN
+"""
         spinright:string = """
-        SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
-        """
+SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
+"""
 #-------Body Code Block Generation--------------------------------------------------------------------------------------
-    var bodt_bl:string
+    var body_bl:string
 
 #-------Body Code Block Generation--------------------------------------------------------------------------------------
     var sub_bl:string
 #-------Entire PBASIC Program Code Generation---------------------------------------------------------------------------
-    var code:string = head_bl & foot1_bl & foot2_bl
+    #var code:string = head_bl & foot1_bl & foot2_bl
 #-------PBASIC File Generation------------------------------------------------------------------------------------------
-    writeFile(fileName,code)
+    writeFile(fileName,"")
+    let file = open(fileName, fmWrite)
+    write(file,head_bl)
+    write(file,foot1_bl)
+    write(file,foot2_bl)
+    close(file)
 #-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
 proc main() =
