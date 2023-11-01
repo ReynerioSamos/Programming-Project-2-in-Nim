@@ -317,9 +317,9 @@ proc main() =
         linecount = 0
         subr_AC = false 
         subr_CW = false 
-        subr_GO = true
-        subr_LF = true 
-        subr_RT = true
+        subr_GO = false
+        subr_LF = false 
+        subr_RT = false
         subr_RV = true
         echo "\nPlease enter a string. Enter 'ABORT' to exit:"
         inputString = readLine(stdin)
