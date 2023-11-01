@@ -66,24 +66,27 @@ var
     format = "     	→	"
     # used to track current line count of derivation
     linecount: int = 0
+
+    subr_GO, subr_RV, subr_LF, subr_RT, subr_AC, subr_CW : bool = false
     # errorCode = "f"
 
 # pause() : void procedure to force a pause until enter is pressed
 proc pause():void =
     echo "Please press enter to continue..."
-    var throwaway:char = stdin.readChar()
+    var throwaway:char
+    throwaway = stdin.readChar()
 
 #printBNF() : void function to just print BNF, done this way incase we want to add reprint functionality
 proc printBNF():void=
-    echo """ ======================BNF Grammar for iZEBOT======================
-     <LANG>	→	ON  <PROGRAM> OFF
-     <PROGRAM>	→	<SET>
-     <SET>		→	<KEY_EXP>- | <SET> <KEY_EXP>- 
-     <KEY_EXP>	→	key <KEY_ASN>
-     <KEY_ASN>	→	<KEY> = <MOVE>
-     <KEY>		→	A | B | C | D
-     <MOVE>	→	GO | RV | LF | RT | AC | CW
-     """
+    echo """======================BNF Grammar for iZEBOT======================
+<LANG>	    →	ON  <PROGRAM> OFF
+<PROGRAM>	→	<SET>
+<SET>		→	<KEY_EXP>- | <SET> <KEY_EXP>- 
+<KEY_EXP>	→	key <KEY_ASN>
+<KEY_ASN>	→	<KEY> = <MOVE>
+<KEY>		→	A | B | C | D
+<MOVE>	    →	GO | RV | LF | RT | AC | CW
+"""
 #-----------------------------------------------------------------------------------------------------------------------
 # parseKey() : bool procedure to 
 proc parseKey(inputString: string): bool =
@@ -248,16 +251,16 @@ Motor_OFF: LOW   13 : LOW 12 : LOW  15 : LOW 14 : RETURN
 """
 #-------Subroutine blocks by Defined movement---------------------------------------------------------------------------
         forward:string = """
-Forward:   HIGH  13 : LOW 12 : HIGH 15 : LOW 14 : RETURN
+Forward:   HIGH 13  : LOW 12 : HIGH 15 : LOW 14 : RETURN
 """
         backward:string = """
 Backward:  HIGH 12  : LOW 13 : HIGH 14 : LOW 15 : RETURN
 """
         turnleft:string = """
-TurnLeft:  HIGH 13  : LOW 12 : LOW 15  : LOW 14 : RETURN
+TurnLeft:  HIGH 13  : LOW 12 : LOW  15 : LOW 14 : RETURN
 """
         turnright:string = """
-TurnRight: LOW 13   : LOW 12 : HIGH 15 : LOW 14 : RETURN
+TurnRight: LOW  13  : LOW 12 : HIGH 15 : LOW 14 : RETURN
 """
         spinleft:string = """
 SpinLeft:  HIGH 13  : LOW 12 : HIGH 14 : LOW 15 : RETURN
@@ -268,8 +271,21 @@ SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
 #-------Body Code Block Generation--------------------------------------------------------------------------------------
     var body_bl:string
 
+
 #-------Subroutine Code Block Generation---------------------------------------------------------------------------------
     var sub_bl:string
+    if subr_GO:
+        sub_bl = sub_bl & forward
+    if subr_RV:
+        sub_bl =  sub_bl & backward
+    if subr_LF:
+        sub_bl = sub_bl & turnleft
+    if subr_RT:
+        sub_bl = sub_bl & turnright
+    if subr_AC:
+        sub_bl = sub_bl & spinleft
+    if subr_CW:
+        sub_bl = sub_bl & spinright
 #-------Entire PBASIC Program Code and fileGeneration--------------------------------------------------------------------
     #Create a blank file with name
     writeFile(fileName,"")
@@ -285,6 +301,11 @@ SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
     write(file,foot2_bl)
     #close file
     close(file)
+
+    #reading and displaying the file on screen
+    let readfile = readFile(fileName)
+    echo "\n Displaying IZEBOT.BSP file contents :\n"
+    echo readfile
 #-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
 proc main() =
@@ -292,7 +313,14 @@ proc main() =
     printBNF()
     var inputString = ""
     while true:
+        # reinitializing globals for next derivation
         linecount = 0
+        subr_AC = false 
+        subr_CW = false 
+        subr_GO = true
+        subr_LF = true 
+        subr_RT = true
+        subr_RV = true
         echo "\nPlease enter a string. Enter 'ABORT' to exit:"
         inputString = readLine(stdin)
 
