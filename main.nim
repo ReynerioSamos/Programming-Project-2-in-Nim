@@ -268,16 +268,22 @@ SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
 #-------Body Code Block Generation--------------------------------------------------------------------------------------
     var body_bl:string
 
-#-------Body Code Block Generation--------------------------------------------------------------------------------------
+#-------Subroutine Code Block Generation---------------------------------------------------------------------------------
     var sub_bl:string
-#-------Entire PBASIC Program Code Generation---------------------------------------------------------------------------
-    #var code:string = head_bl & foot1_bl & foot2_bl
-#-------PBASIC File Generation------------------------------------------------------------------------------------------
+#-------Entire PBASIC Program Code and fileGeneration--------------------------------------------------------------------
+    #Create a blank file with name
     writeFile(fileName,"")
+    #opens file and begin writing stream
     let file = open(fileName, fmWrite)
+    # header is static, goes here
     write(file,head_bl)
+    # body generated code goes here
+    write(file,body_bl)
     write(file,foot1_bl)
+    # subroutine generated code goes here
+    write(file,sub_bl)
     write(file,foot2_bl)
+    #close file
     close(file)
 #-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
