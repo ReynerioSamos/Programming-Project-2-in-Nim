@@ -226,6 +226,48 @@ proc startDerivation(inputString: string): bool =
 
 proc PBASIC_GEN(instruct:string): void =
     echo "\nBegining generation of PBASIC Program Code for Robo-Stamp 2P"
+    var 
+        fileName:string = "IZEBOT.BSP"
+#-------Provided Code Blocks---------------------------------------------------------------------------------------------
+        head_bl:string = """
+        '{$STAMP BS2p}
+        '{$PBASIC 2.5}
+        KEY        VAR     Byte
+        Main:      DO
+                   SERIN 3,2063,250,Timeout,[KEY]
+        """
+        foot1_bl:string = """
+                   LOOP
+        Timeout:   GOSUB Motor_OFF
+                   GOTO Main
+        '+++++ Movement Procedure ++++++++++++++++++++++++++++++
+        """
+        foot2_bl:string = """
+        Motor_OFF: LOW   13 : LOW 12 : LOW  15 : LOW 14 : RETURN
+        '+++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        """
+#-------Subroutine blocks by Defined movement---------------------------------------------------------------------------
+        forward:string = """
+        Forward:   HIGH  13 : LOW 12 : HIGH 15 : LOW 14 : RETURN
+        """
+        backward:string = """
+        Backward:  HIGH 12  : LOW 13 : HIGH 14 : LOW 15 : RETURN
+        """
+        turnleft:string = """
+        TurnLeft:  HIGH 13  : LOW 12 : LOW 15  : LOW 14 : RETURN
+        """
+        turnright:string = """
+        TurnRight: LOW 13   : LOW 12 : HIGH 15 : LOW 14 : RETURN
+        """
+        spinleft:string = """
+        SpinLeft:  HIGH 13  : LOW 12 : HIGH 14 : LOW 15 : RETURN
+        """
+        spinright:string = """
+        SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
+        """
+#-------Body Code Block Generation--------------------------------------------------------------------------------------
+
+#-------Entire PBASIC Program Code Generation---------------------------------------------------------------------------
 
 #-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
