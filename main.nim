@@ -51,6 +51,8 @@
         Joshua Richards     - 2017115716
 ]#
 # Program was writtin using Nim Compiler Version 2.0.0 [Linux: amd64]
+
+#-----------------------------------------------------------------------------------------------------------------------
 import std/strutils
 
 #global variable declarations
@@ -82,17 +84,17 @@ proc printBNF():void=
      <KEY>		→	A | B | C | D
      <MOVE>	→	GO | RV | LF | RT | AC | CW
      """
-
+#-----------------------------------------------------------------------------------------------------------------------
 # parseKey() : bool procedure to 
 proc parseKey(inputString: string): bool =
     case inputString:
-    of "A", "B", "C", "D":
+    of "A", "a", "B", "b", "C", "c", "D", "d":
         linecount += 1
         derivationString = derivationString.replace("<KEY>", inputString)
         derivationHistory.add($linecount & format & derivationString)
         return true
     else:
-        echo "[",inputString,"] is a unrecognized key; key must be one of the following: 'A', 'B', 'C' or 'D'"
+        echo "[",inputString,"] is a unrecognized key; key must be one of the following: 'A/a', 'B/b', 'C/c' or 'D/d'"
         pause()
         return false
 # parseMove() : bool procedure to 
@@ -219,6 +221,13 @@ proc startDerivation(inputString: string): bool =
         return true
     else:
         return false
+#-----------------------------------------------------------------------------------------------------------------------
+#PBASIC_GEN(instruct) - function to generate PBASIC code
+
+proc PBASIC_GEN(instruct:string): void =
+    echo "\nBegining generation of PBASIC Program Code for Robo-Stamp 2P"
+
+#-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
 proc main() =
     echo "Program was compiled using Nim Version: ",system.NimVersion
@@ -242,6 +251,10 @@ proc main() =
                 for items in derivationHistory:
                     echo items
                 echo "\nDerivation Successful!"
+                pause()
+                # PrintParseTree()
+                echo noWhiteSpace
+                PBASIC_GEN(noWhiteSpace)
                 pause()
                     
             derivationHistory = @[]
