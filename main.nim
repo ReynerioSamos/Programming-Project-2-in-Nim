@@ -549,6 +549,7 @@ proc main() =
                 echo "\nDerivation Successful!"
                 pause()
                 PrintParseTree(noWhiteSpace)
+                pause()
                 echo noWhiteSpace
                 PBASIC_GEN(noWhiteSpace)
                 pause()
