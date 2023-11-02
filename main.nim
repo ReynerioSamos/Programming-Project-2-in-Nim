@@ -9,11 +9,11 @@
 #       If successful :
 #           [/]Notifys of completion 
 #           Pause
-#           [-]Generate and display parse tree
+#           [X]Generate and display parse tree
 #           Pause
-#           [-]Generate and Display PBASIC Program code
+#           [/]Generate and Display PBASIC Program code
 #           Pause
-#           [-]Saves PBASIC Program code to IZEBOT.BSP
+#           [/]Saves PBASIC Program code to IZEBOT.BSP
 #           Pause
 #           [/]Loop back from input string prompt
 #       In unsuccessful :
@@ -67,12 +67,24 @@ var
     # used to track current line count of derivation
     linecount: int = 0
 
+    max_width:int = 8
+
     subr_GO, subr_RV, subr_LF, subr_RT, subr_AC, subr_CW : bool = false
 
     A_asn : (bool, string)
     B_asn : (bool, string)
     C_asn : (bool, string)
     D_asn : (bool, string)
+
+
+
+let 
+    left: string = "/"
+    mid: string = "|"
+    right: string = """\"""
+    w_unit: int = 6
+    single_space = " "
+
     # errorCode = "f"
 
 proc match_keytomove(key : string, subroutine : string):void =
@@ -93,6 +105,7 @@ proc pause():void =
     echo "Please press enter to continue..."
     var throwaway:char
     throwaway = stdin.readChar()
+    return
 
 #printBNF() : void function to just print BNF, done this way incase we want to add reprint functionality
 proc printBNF():void=
@@ -242,16 +255,6 @@ proc parseProgram(inputString: string): bool =
 # startDerivation() : bool procedure to 
 proc startDerivation(inputString: string): bool =
     var inputString = inputString.strip()
-    #[
-    let checkON     = inputString.find("ON")
-    let checkOFF    = inputString.find("OFF")
-    
-    if checkON != 0:
-        echo "ERROR: Start of statment must be ON*****"
-        return errorCode
-    elif inputString.len - checkOFF != 3:
-        echo "ERROR: End of statment must be OFF*****"
-        return errorCode ]#
 
     if not inputString.startsWith("ON"):
         echo "[",inputString,"] is a unrecognized input string; must begin with 'ON'"
@@ -287,7 +290,7 @@ proc PBASIC_GEN(instruct:string): void =
 '{$PBASIC 2.5}
 KEY        VAR     Byte
 Main:      DO
-             SERIN 3,2063,250,Timeout,[KEY]
+             SERIN 3,2063,250,Timeout, [KEY]
 """
         foot1_bl:string = """
            LOOP
@@ -296,7 +299,7 @@ Timeout:   GOSUB Motor_OFF
 '+++++ Movement Procedure ++++++++++++++++++++++++++++++
 """
         foot2_bl:string = """
-Motor_OFF: LOW   13 : LOW 12 : LOW  15 : LOW 14 : RETURN
+Motor_OFF: LOW  13  : LOW 12 : LOW  15 : LOW 14 : RETURN
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++++
 """
 #-------Subroutine blocks by Defined movement---------------------------------------------------------------------------
@@ -367,6 +370,148 @@ SpinRight: HIGH 12  : LOW 13 : HIGH 15 : LOW 14 : RETURN
     let readfile = readFile(fileName)
     echo "\n Displaying IZEBOT.BSP file contents :\n"
     echo readfile
+
+proc parseTreeMOVE(input:string): void =
+    var 
+        component = "<MOVE>"
+        input = input.strip()
+        half_max = max_width div 2
+        left_space = repeat(single_space,(half_max * w_unit))
+        right_space = repeat(single_space,(half_max * w_unit))
+        mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+    
+    echo left_space,single_space, input, right_space
+
+proc parseTreeKEY(input:string): void =
+    max_width -= 1
+    var 
+        component = "<KEY>"
+        input = input.strip()
+        half_max = max_width div 2
+        left_space = repeat(single_space,(half_max * w_unit)+1)
+        right_space = repeat(single_space,(half_max * w_unit))
+        mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+    
+    echo left_space, input
+
+proc parseTreeKEY_ASN(input: string): void =
+    var
+        component: string = "<KEY>=<MOVE>"
+        left_sub_comp : string = "<KEY>="
+        left_mid_comp = repeat(single_space,(len(left_sub_comp) div 2)) & left & repeat(single_space,(len(left_sub_comp) div 2))
+        right_sub_comp: string = "<MOVE>"
+        right_mid_comp = repeat(single_space,(len(right_sub_comp) div 2)) & right & repeat(single_space,(len(right_sub_comp) div 2))
+        input = input.strip()
+        half_max = max_width div 2
+        left_space = repeat(single_space,(half_max * w_unit))
+        right_space = repeat(single_space,(half_max * w_unit))
+        
+    echo left_space, left_mid_comp, right_mid_comp, right_space
+    echo left_space, component, right_space
+    max_width += 2
+
+    let input_split = split(input, "=", 2)
+    parseTreeMOVE(input_split[1])
+    parseTreeKEY(input_split[0])
+
+proc parseTreeKEY_EXP(input:string ): void =
+    var
+        component: string = "key <KEY_ASN>"
+        mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+        input = input.strip()
+        half_max = max_width div 2
+        left_space = repeat(single_space,(half_max * w_unit))
+        right_space = repeat(single_space,(half_max * w_unit))
+
+    input = replace(input,"key","")
+
+    echo left_space, mid_component, right_space
+    echo left_space, component, right_space
+    echo left_space, mid_component, right_space
+
+    parseTreeKEY_ASN(input)
+
+proc parseTreeSET(input: string) : void =
+    if count(input , "-") == 1:
+        max_width -= 2
+        var
+            component: string = "<KEY_EXP>-"
+            mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+            input = input.strip
+            half_max = max_width div 2
+            left_space = repeat(single_space,(half_max * w_unit))
+            right_space = repeat(single_space,(half_max * w_unit))
+
+        echo left_space, component, right_space
+        echo left_space, mid_component, right_space
+        max_width += 2
+        parseTreeKEY_EXP(input)
+    
+    elif count(input, "-") > 1:
+        max_width -= 4
+        var
+            component: string = "<SET> <KEY_EXP>-"
+            left_sub_comp : string = "<SET>"
+            left_mid_comp = repeat(single_space,(len(left_sub_comp) div 2)) & left & repeat(single_space,(len(left_sub_comp) div 2))
+            right_sub_comp: string = "<KEY_EXP>-"
+            right_mid_comp = repeat(single_space,(len(right_sub_comp) div 2)) & right & repeat(single_space,(len(right_sub_comp) div 2))
+            half_max = max_width div 2
+            left_space = repeat(single_space,(half_max * w_unit))
+            right_space = repeat(single_space,(half_max * w_unit))
+        
+        echo left_space, left_mid_comp, right_mid_comp, right_space
+        echo left_space, component, right_space
+
+        max_width += 2 * count(input, "-")
+        let input_split = split(input, "-", 2)
+        parseTreeKEY_EXP(input_split[1])
+        parseTreeSET(input_split[0])
+
+
+proc parseTreeLANG(input: string): void =
+    var
+        component: string = "ON <PROGRAM> OFF"
+        mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+        input = input.strip()
+        half_max = max_width div 2
+        left_space = repeat(single_space,(half_max * w_unit))
+        right_space = repeat(single_space,(half_max * w_unit))
+
+    input = replace(input,"ON","")
+    input = replace(input,"OFF","")
+
+    echo left_space, component, right_space
+    echo left_space, mid_component, right_space
+
+    max_width += 2
+
+    component = "<SET>"
+    mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+    input = input.strip()
+    half_max = max_width div 2
+    left_space = repeat(single_space,(half_max * w_unit))
+    right_space = repeat(single_space,(half_max * w_unit))
+
+    echo left_space, component, right_space
+    echo left_space, mid_component, right_space
+    max_width += 2
+    parseTreeSET(input)
+
+proc PrintParseTree(input: string): void =
+    var 
+        component = "<LANG>"
+        input = input.strip()
+        half_max = max_width div 2
+        left_space = repeat(single_space,(half_max * w_unit))
+        right_space = repeat(single_space,(half_max * w_unit))
+        mid_component = repeat(single_space,(len(component) div 2)) & mid & repeat(single_space,(len(component) div 2))
+    
+    echo left_space , component , right_space
+    echo left_space,mid_component,right_space
+
+    parseTreeLANG(input)
+    return
+
 #-----------------------------------------------------------------------------------------------------------------------
 # main() : driver function
 proc main() =
@@ -403,7 +548,7 @@ proc main() =
                     echo items
                 echo "\nDerivation Successful!"
                 pause()
-                # PrintParseTree()
+                PrintParseTree(noWhiteSpace)
                 echo noWhiteSpace
                 PBASIC_GEN(noWhiteSpace)
                 pause()
